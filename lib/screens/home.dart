@@ -1,0 +1,327 @@
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:game/screens/game.dart';
+
+class Home extends StatefulWidget {
+  const Home({super.key});
+
+  @override
+  State<Home> createState() => _HomeState();
+
+}
+
+class _HomeState extends State<Home> {
+  String difficulty = 'Easy';
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        backgroundColor: Color(0xE5D7AEF3),
+        elevation: 0,
+        title: const Text('SUDOKU',
+          style: TextStyle(
+            fontSize: 30,
+            fontWeight: FontWeight.w500,
+            // fontFamily: ,
+          ),
+        ),
+        centerTitle: true,
+      ),
+        body: Container(
+          decoration: BoxDecoration(
+            color: Color(0xE5EEE1F4),
+          ),
+          child: Center(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              mainAxisAlignment: MainAxisAlignment.center,
+
+              children: [
+                Spacer(),
+              // first button
+              SizedBox(
+                width: 225,
+                height: 50,
+                child: FloatingActionButton(onPressed: (){
+                  // Navigator.pushNamed(context, '/Game');  //beta version for screen navigation
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => Game(difficulty: difficulty),
+                    ),
+                  );
+                },
+
+                    // backgroundColor: Colors.grey,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      children: [
+                        const SizedBox(width: 25),
+                        const Icon(
+                          Icons.play_arrow,
+                          color: Colors.black,
+                          size: 30,
+                        ),
+
+                        const SizedBox(width: 15),
+
+                        const Text(
+                          'New Game',
+                          style: TextStyle(
+                            fontSize: 25,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black,
+                          ),
+                        )
+                      ],
+                    )
+                ),
+              ),
+
+              const SizedBox(height: 20),
+
+                SizedBox(
+                  width: 225,
+                  height: 50,
+                  child: FloatingActionButton(onPressed: (){
+
+                  },
+                      // backgroundColor: Colors.grey,
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        children: [
+                          const SizedBox(width: 25),
+                          const Icon(
+                            Icons.autorenew,
+                            color: Colors.black,
+                            size: 30,
+                          ),
+
+                          const SizedBox(width: 25),
+
+                          const Text(
+                            'Resume',
+                            style: TextStyle(
+                              fontSize: 25,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.black,
+                            ),
+                          )
+                        ],
+                      )
+                  ),
+                ),
+
+              const SizedBox(height: 20),
+
+              //second button
+              SizedBox(
+                width: 225,
+                height: 50,
+                child: FloatingActionButton(onPressed: (){
+                  showDialog(context: context,
+                      barrierColor: Colors.black.withAlpha(155),
+                      builder: (BuildContext context){
+                        return AlertDialog(
+                          title: const Text('Rules',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          content: const Text('1. A number must be unique to its row and its column\n\n'
+                              '2. A number must be unique in the 3x3 sub grids.\n\n'
+                              'Enjoy solving!!',
+                            style: TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        );
+                      }
+                  );
+                },
+                    // backgroundColor: Colors.grey,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      children: [
+                        const SizedBox(width: 30),
+                        const Icon(
+                          Icons.rule_sharp,
+                          color: Colors.black,
+                          size: 30,
+                        ),
+
+                        const SizedBox(width: 30),
+
+                        const Text(
+                          'Rules',
+                          style: TextStyle(
+                            fontSize: 25,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black,
+                          ),
+                        )
+                      ],
+                    )
+                ),
+              ),
+
+              const SizedBox(height: 20),
+
+              //third button
+              SizedBox(
+                width: 225,
+                height: 50,
+                child: FloatingActionButton(onPressed: (){
+                  showDialog(
+                      context: context,
+                      barrierColor: Colors.black.withAlpha(155),
+                      builder: (BuildContext context){
+                        return AlertDialog(
+                            title: const Text(
+                                'Levels',
+                              textAlign: TextAlign.center,
+                            ),
+                            content: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                TextButton(onPressed: (){
+                                  setState(() {
+                                    difficulty = 'Easy';
+                                    Navigator.of(context).pop();
+                                  });
+                                },
+                                    child: const Text(
+                                        'Easy',
+                                      style: TextStyle(
+                                        fontSize: 20,
+                                      ),
+                                    )
+                                ),
+                                TextButton(onPressed: (){
+                                  setState(() {
+                                    difficulty = 'Medium';
+                                    Navigator.of(context).pop();
+                                  });
+                                },
+                                    child: const Text(
+                                        'Medium',
+                                      style: TextStyle(
+                                        fontSize: 20,
+                                      ),
+                                    )
+                                ),
+                                TextButton(onPressed: (){
+                                  setState(() {
+                                    difficulty = 'Hard';
+                                    Navigator.of(context).pop();
+                                  });
+                                },
+                                    child: const Text(
+                                        'Hard',
+                                      style: TextStyle(
+                                        fontSize: 20,
+                                      ),
+                                    )
+                                )
+                              ],
+                            ),
+                        );
+                      }
+                  );
+                },
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      children: [
+                        const SizedBox(width: 30),
+                        const Icon(
+                          Icons.numbers,
+                          color: Colors.black,
+                          size: 30,
+                        ),
+
+                        const SizedBox(width: 32),
+
+                        const Text(
+                          'Level',
+                          style: TextStyle(
+                            fontSize: 25,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black,
+                          ),
+                        )
+                      ],
+                    )
+                ),
+              ),
+
+              const SizedBox(height: 20),
+
+              //fourth button
+              SizedBox(
+                width: 225,
+                height: 50,
+                child: FloatingActionButton(onPressed: (){
+                  showDialog(
+                      context: context,
+                      barrierColor: Colors.black.withAlpha(155),
+                      builder: (BuildContext context){
+                        return AlertDialog(
+                          title: const Text('Exit'),
+                          content: const Text('Are you sure you want to exit?'),
+                          actions: [
+                            TextButton(
+                              onPressed: () {
+                                Navigator.of(context).pop();
+                                // Closes the dialog box
+                                /* When Navigator.of(context).pop() is called:
+                                        The topmost route (or screen/dialog) is popped off the stack.
+                                        The user is taken back to the previous route.*/
+                              },
+                              child: Text("No"),
+                            ),
+                            TextButton(
+                              onPressed: () {
+                                SystemNavigator.pop();
+                                // Closes the app
+                              },
+                              child: Text("Yes"),
+                            ),
+                         ]);
+                      }
+                  );
+                },
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      children: [
+                        const SizedBox(width: 25),
+                        const Icon(
+                          Icons.door_back_door,
+                          color: Colors.black,
+                          size: 30,
+                        ),
+
+                        const SizedBox(width: 40),
+
+                        const Text(
+                          'Exit',
+                          style: TextStyle(
+                            fontSize: 25,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black,
+                          ),
+                        )
+                      ],
+                    )
+                ),
+              ),
+                Spacer(),
+                const SizedBox(height: 100)
+              ]),
+          ),
+        ));
+  }
+}
