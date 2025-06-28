@@ -5,10 +5,18 @@ plugins {
     id("dev.flutter.flutter-gradle-plugin")
 }
 
+dependencies {
+    implementation("com.google.android.material:material:1.12.0")
+}
+
 android {
     namespace = "com.hamster.game"
     compileSdk = flutter.compileSdkVersion
-    ndkVersion = flutter.ndkVersion
+    ndkVersion = "29.0.13113456"
+    defaultConfig{
+        targetSdkVersion(34)
+        minSdkVersion(21)
+    }
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11

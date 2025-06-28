@@ -1,16 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:game/screens/game_logic.dart';
+import 'package:game/screens/saveBoard.dart';
 
 class Game extends StatefulWidget {
   final String difficulty;
+  final List<List<int?>>? savedBoard;
+  final List<List<int?>>? cloneBoard;
+  final List<List<int>>? solvedBoard;
 
-  const Game({super.key, required this.difficulty});
+  const Game({super.key, required this.savedBoard, required this.cloneBoard, required this.solvedBoard, required this.difficulty});
 
   @override
   State<Game> createState() => _GameState();
 }
 
 class _GameState extends State<Game> {
+  late bool isSaved;
   GameLogic game = GameLogic();
   bool isSolved = false;
   late List<List<int?>> solvedPuzzle;
@@ -22,9 +27,15 @@ class _GameState extends State<Game> {
   @override
   void initState(){
     super.initState();
-    solvedPuzzle = game.solution;
-    puzzle = game.removeCells(widget.difficulty);
-    clone = cloneBoard(puzzle);
+    if(widget.savedBoard != null && widget.cloneBoard != null){
+        solvedPuzzle = widget.solvedBoard as List<List<int>>;
+        puzzle = (widget.savedBoard) as List<List<int?>>;
+        clone = (widget.cloneBoard) as List<List<int?>>;
+    }else{
+      solvedPuzzle = game.solution;
+      puzzle = game.removeCells(widget.difficulty);
+      clone = cloneBoard(puzzle);
+    }
   }
 
   // Clone function
@@ -39,7 +50,8 @@ class _GameState extends State<Game> {
       top: false,
       child: Scaffold(
           appBar: AppBar(
-            backgroundColor: Color(0xE5D7AEF3),
+            backgroundColor: Colors.indigo[400]?.withAlpha(200),
+            surfaceTintColor: Colors.grey[200],
             title: Text("Level: ${widget.difficulty}",
               style: TextStyle(
                 fontSize: 20,
@@ -47,14 +59,56 @@ class _GameState extends State<Game> {
               ),
             ),
             centerTitle: true,
+            actions: [
+              PopupMenuButton<String>(
+                offset: Offset(100, 50),
+                itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
+                  PopupMenuItem<String>(
+                    value: "Save Board",
+                    child: Text("Save Board"),
+                  ),
+                  PopupMenuItem(
+                    value: "Clear Board",
+                    child: Text("Clear Board"),)
+                ],
+                icon: Icon(Icons.menu),
+                onSelected: (String value){
+                  if(value == "Save Board"){
+                    SaveBoard(puzzle, clone, widget.difficulty);
+                    isSaved = true;
+
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('Board Saved',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            color: Colors.black,
+                          ),
+                        ),
+                        margin: EdgeInsets.symmetric(horizontal: 100, vertical: 20),
+                        duration: Duration(seconds: 3),
+                        behavior: SnackBarBehavior.floating,
+                        elevation: 5,
+                        backgroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                      ),
+                    );
+                  }else if(value == "Clear Board"){
+                    // SaveBoard.ClearBoard();
+                  }
+                },
+              )
+            ],
           ),
           body: Container(
             padding: EdgeInsets.only(left: 2, right: 2),
-            color: Color(0xE5EEE1F4),
+            color: Colors.indigo[50],
             child: Column(
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
-                const SizedBox(height: 50),
+                const SizedBox(height: 30),
       
                 // Grid to display sudoku
                 Center(
@@ -64,8 +118,8 @@ class _GameState extends State<Game> {
                           color: Colors.black,
                           width: 3,
                         ),
-                        borderRadius: BorderRadius.circular(5),
                       ),
+
                       child: AspectRatio(
                         aspectRatio: 1,
                         child: GridView.builder(
@@ -90,13 +144,13 @@ class _GameState extends State<Game> {
                                 decoration: BoxDecoration(
                                   border: Border(
                                     top: BorderSide(width: (row == 0) ? 0 : (row == 3 || row == 6)? 3 : 0.5,
-                                                    color: (row == 3 || row == 6)? Colors.black : Colors.grey ),
+                                                    color: (row == 3 || row == 6)? Colors.black : Colors.black.withAlpha(150) ),
                                     left: BorderSide(width: (col == 0) ? 0 : (col == 3 || col == 6)? 3 : 0.5,
-                                                    color: (col == 3 || col == 6)? Colors.black : Colors.grey),
-                                    right: BorderSide(width: 0.5, color: Colors.grey),
-                                    bottom: BorderSide(width: 0.5, color: Colors.grey),
+                                                    color: (col == 3 || col == 6)? Colors.black : Colors.black.withAlpha(150)),
+                                    right: BorderSide(width: 0.5, color: Colors.black.withAlpha(150)),
+                                    bottom: BorderSide(width: 0.5, color: Colors.black.withAlpha(150)),
                                   ),
-                                  color: isSelected? Color(0xE5C4C2CC) : (clone[row][col] != null)? Color(0xE5D7AEF3) : Colors.white,
+                                  color: isSelected? Colors.grey : (clone[row][col] != null)? Colors.indigo[300]?.withAlpha(200) : Colors.white,
                                 ),
       
                                 child: Center(
@@ -115,44 +169,53 @@ class _GameState extends State<Game> {
                     ),
                 ),
       
-                const SizedBox(height: 5),
+                const SizedBox(height: 15),
       
                 Row(
                     mainAxisAlignment: MainAxisAlignment.spaceAround,
                     children: [
                       const SizedBox(width: 10),
       
-                      FloatingActionButton(onPressed: (){
-                        showDialog(
-                            context: context,
-                            barrierColor: Colors.black.withAlpha(155),
-                            builder: (BuildContext context){
-                              return AlertDialog(
-                                  title: const Text('Solve'),
-                                  content: const Text('Do you want the puzzle to be solved?'),
-                                  actions: [
-                                    TextButton(
-                                      onPressed: () {
-                                        Navigator.of(context).pop();
-                                        // Closes the dialog box
-                                      },
-                                      child: Text("No"),
-                                    ),
-                                    TextButton(
-                                      onPressed: () {
-                                        setState(() {
-                                          puzzle = solvedPuzzle;
-                                          isSolved = true;
+                      SizedBox(
+                        width: 70,
+                        child: FloatingActionButton(onPressed: (){
+                          showDialog(
+                              context: context,
+                              barrierColor: Colors.black.withAlpha(155),
+                              builder: (BuildContext context){
+                                return AlertDialog(
+                                    title: const Text('Solve'),
+                                    content: const Text('Do you want the puzzle to be solved?'),
+                                    actions: [
+                                      TextButton(
+                                        onPressed: () {
                                           Navigator.of(context).pop();
-                                        });
-                                      },
-                                      child: Text("Yes"),
-                                    ),
-                                  ]);
-                            }
-                        );
-                      },
-                        child: const Text('Solve'),
+                                          // Closes the dialog box
+                                        },
+                                        child: Text("No"),
+                                      ),
+                                      TextButton(
+                                        onPressed: () {
+                                          setState(() {
+                                            puzzle = solvedPuzzle;
+                                            isSolved = true;
+                                            Navigator.of(context).pop();
+                                          });
+                                        },
+                                        child: Text("Yes"),
+                                      ),
+                                    ]);
+                              }
+                          );
+                        },
+                          backgroundColor: Colors.indigo[300]?.withAlpha(200),
+                          child: const Text('Solve',
+                            style: TextStyle(
+                                fontSize: 18,
+                              color: Colors.black
+                            )
+                          ),
+                        ),
                       ),
       
                       Spacer(),
@@ -160,74 +223,111 @@ class _GameState extends State<Game> {
                       SizedBox(
                         width: 150,
                         child: FloatingActionButton(onPressed: (){
-
+                          SaveBoard(puzzle, clone, widget.difficulty);
+                          isSaved = true;
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text('Board Saved',
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                  color: Colors.black,
+                                ),
+                              ),
+                              margin: EdgeInsets.symmetric(horizontal: 100, vertical: 20),
+                              duration: Duration(seconds: 3),
+                              behavior: SnackBarBehavior.floating,
+                              elevation: 5,
+                              backgroundColor: Colors.white,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(20),
+                              ),
+                            ),
+                          );
                         },
-                          child: const Text('Save Board'),
+                          backgroundColor: Colors.indigo[300]?.withAlpha(200),
+                          child: const Text('Save Board',
+                            style: TextStyle(
+                              color: Colors.black,
+                              fontSize: 18
+                            ),
+                          ),
                         ),
                       ),
                       Spacer(),
       
-                      FloatingActionButton(onPressed: (){
-                        (isSolved)? {
+                      SizedBox(
+                        width: 70,
+                        child: FloatingActionButton(onPressed: (){
+                          (isSolved)? {
+                            showDialog(context: context,
+                                builder: (BuildContext context){
+                                  return AlertDialog(
+                                    title: const Text('Not valid!!',
+                                        textAlign: TextAlign.center,
+                                        style: TextStyle(
+                                          fontSize: 25,
+                                          fontWeight: FontWeight.bold,
+                                        )
+                                    ),
+
+                                    content: const Text('You have used the solver.',
+                                        textAlign: TextAlign.center,
+                                        style: TextStyle(
+                                          fontSize: 18,
+                                        )
+                                    ),
+                                  );
+                                })
+                          }
+                              :    // submit button works only if the puzzle is not solved using the solver
+                          (isCorrect(puzzle, clone))?
                           showDialog(context: context,
                               builder: (BuildContext context){
                                 return AlertDialog(
-                                  title: const Text('Not valid!!',
+                                  title: const Text('Congratulations!!',
                                       textAlign: TextAlign.center,
                                       style: TextStyle(
                                         fontSize: 25,
                                         fontWeight: FontWeight.bold,
                                       )
                                   ),
-      
-                                  content: const Text('You have used the solver.',
+
+                                  content: const Text('You have found the solution!!',
+                                      textAlign: TextAlign.center,
                                       style: TextStyle(
-                                        fontSize: 18,
+                                        fontSize: 20,
                                       )
                                   ),
                                 );
                               })
-                        }
-                            :    // submit button works only if the puzzle is not solved using the solver
-                        (isCorrect(puzzle, clone))?
-                        showDialog(context: context,
-                            builder: (BuildContext context){
-                              return AlertDialog(
-                                title: const Text('Congratulations!!',
-                                    textAlign: TextAlign.center,
-                                    style: TextStyle(
-                                      fontSize: 25,
-                                      fontWeight: FontWeight.bold,
-                                    )
-                                ),
-      
-                                content: const Text('You have found the solution!!',
-                                    style: TextStyle(
-                                      fontSize: 20,
-                                    )
-                                ),
-                              );
-                            })
-                            :
-                        showDialog(context: context,
-                            builder: (BuildContext context){
-                              return AlertDialog(
-                                title: const Text('Ooops..',
-                                    textAlign: TextAlign.center,
-                                    style: TextStyle(
-                                      fontSize: 25,
-                                      fontWeight: FontWeight.bold,
-                                    )
-                                ),
-                                content: const Text('This solution is incorrect.\nTry again....',
-                                    style: TextStyle(
-                                      fontSize: 20,
-                                    )
-                                ),
-                              );
-                            });
-                      },
-                        child: const Text('Submit'),
+                              :
+                          showDialog(context: context,
+                              builder: (BuildContext context){
+                                return AlertDialog(
+                                  title: const Text('Ooops..',
+                                      textAlign: TextAlign.center,
+                                      style: TextStyle(
+                                        fontSize: 25,
+                                        fontWeight: FontWeight.bold,
+                                      )
+                                  ),
+                                  content: const Text('This solution is incorrect.\nTry again....',
+                                      textAlign: TextAlign.center,
+                                      style: TextStyle(
+                                        fontSize: 20,
+                                      )
+                                  ),
+                                );
+                              });
+                        },
+                          backgroundColor: Colors.indigo[300]?.withAlpha(200),
+                          child: const Text('Submit',
+                            style: TextStyle(
+                                fontSize: 18,
+                              color: Colors.black
+                            ),
+                          ),
+                        ),
                       ),
       
                       const SizedBox(width: 10)
@@ -244,8 +344,10 @@ class _GameState extends State<Game> {
                         puzzle[selectedRow][selectedCol] = 1;
                       });
                     },
+                      backgroundColor: Colors.indigo[300]?.withAlpha(200),
                       child: Text('1',
                         style: TextStyle(
+                          color: Colors.black,
                           fontSize: 20,
                         ),),
                     ),
@@ -257,8 +359,10 @@ class _GameState extends State<Game> {
                         puzzle[selectedRow][selectedCol] = 2;
                       });
                     },
+                      backgroundColor: Colors.indigo[300]?.withAlpha(200),
                       child: Text('2',
                         style: TextStyle(
+                          color: Colors.black,
                           fontSize: 20,
                         ),),
                     ),
@@ -270,8 +374,10 @@ class _GameState extends State<Game> {
                         puzzle[selectedRow][selectedCol] = 3;
                       });
                     },
+                      backgroundColor: Colors.indigo[300]?.withAlpha(200),
                       child: Text('3',
                         style: TextStyle(
+                          color: Colors.black,
                           fontSize: 20,
                         ),),
                     ),
@@ -283,8 +389,10 @@ class _GameState extends State<Game> {
                         puzzle[selectedRow][selectedCol] = 4;
                       });
                     },
+                      backgroundColor: Colors.indigo[300]?.withAlpha(200),
                       child: Text('4',
                         style: TextStyle(
+                          color: Colors.black,
                           fontSize: 20,
                         ),),
                     ),
@@ -296,8 +404,10 @@ class _GameState extends State<Game> {
                         puzzle[selectedRow][selectedCol] = 5;
                       });
                     },
+                      backgroundColor: Colors.indigo[300]?.withAlpha(200),
                       child: Text('5',
                         style: TextStyle(
+                          color: Colors.black,
                           fontSize: 20,
                         ),),
                     ),
@@ -314,8 +424,10 @@ class _GameState extends State<Game> {
                         puzzle[selectedRow][selectedCol] = 6;
                       });
                     },
+                      backgroundColor: Colors.indigo[300]?.withAlpha(200),
                       child: Text('6',
                         style: TextStyle(
+                          color: Colors.black,
                           fontSize: 20,
                         ),),
                     ),
@@ -327,8 +439,10 @@ class _GameState extends State<Game> {
                         puzzle[selectedRow][selectedCol] = 7;
                       });
                     },
+                      backgroundColor: Colors.indigo[300]?.withAlpha(200),
                       child: Text('7',
                         style: TextStyle(
+                          color: Colors.black,
                           fontSize: 20,
                         ),),
                     ),
@@ -340,8 +454,10 @@ class _GameState extends State<Game> {
                         puzzle[selectedRow][selectedCol] = 8;
                       });
                     },
+                      backgroundColor: Colors.indigo[300]?.withAlpha(200),
                       child: Text('8',
                         style: TextStyle(
+                          color: Colors.black,
                           fontSize: 20,
                         ),),
                     ),
@@ -353,8 +469,10 @@ class _GameState extends State<Game> {
                         puzzle[selectedRow][selectedCol] = 9;
                       });
                     },
+                      backgroundColor: Colors.indigo[300]?.withAlpha(200),
                       child: Text('9',
                         style: TextStyle(
+                          color: Colors.black,
                           fontSize: 20,
                         ),),
                     ),
@@ -366,13 +484,18 @@ class _GameState extends State<Game> {
                         puzzle[selectedRow][selectedCol] = null;
                       });
                     },
-                      child: Icon(Icons.clear)
+                        backgroundColor: Colors.indigo[300]?.withAlpha(200),
+                      child: const Text('Clear',
+                        style: TextStyle(
+                          color: Colors.black
+                        ),
+                      )
                     ),
                   ],
                 ),
       
                 Spacer(),
-                const SizedBox(height: 15),
+                const SizedBox(height: 20),
               ],
             ),
           )),

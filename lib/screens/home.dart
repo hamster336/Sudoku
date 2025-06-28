@@ -1,24 +1,52 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:game/screens/game.dart';
+import 'package:game/screens/saveBoard.dart';
 
 class Home extends StatefulWidget {
   const Home({super.key});
 
   @override
   State<Home> createState() => _HomeState();
-
 }
 
-class _HomeState extends State<Home> {
+class _HomeState extends State<Home>{
+
   String difficulty = 'Easy';
+  List<List<int?>>? savedBoard = null;
+  List<List<int?>>? savedClone = null;
+  List<List<int>>? solvedBoard = null;
+  String? savedDifficulty = null;
+  late final savedData;
+
+  @override
+  void initState(){
+    super.initState();
+    _savedPuzzle();
+  }
+
+void _savedPuzzle() async{
+  savedData = await SaveBoard.loadPuzzle();
+  if (savedData != null) {
+    savedBoard = savedData['board'];
+    savedClone = savedData['clone'];
+    solvedBoard = savedData['solution'];
+    savedDifficulty = savedData['difficulty'];
+  }else{
+    savedBoard = null;
+    savedClone = null;
+    solvedBoard = null;
+    savedDifficulty = "Easy";
+  }
+}
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Color(0xE5D7AEF3),
-        elevation: 0,
+        backgroundColor: Colors.indigo[400]?.withAlpha(200),
+        surfaceTintColor: Colors.grey[200],
+
         title: const Text('SUDOKU',
           style: TextStyle(
             fontSize: 30,
@@ -30,7 +58,7 @@ class _HomeState extends State<Home> {
       ),
         body: Container(
           decoration: BoxDecoration(
-            color: Color(0xE5EEE1F4),
+            color: Colors.indigo[50]
           ),
           child: Center(
             child: Column(
@@ -39,21 +67,22 @@ class _HomeState extends State<Home> {
 
               children: [
                 Spacer(),
+
               // first button
               SizedBox(
                 width: 225,
                 height: 50,
                 child: FloatingActionButton(onPressed: (){
-                  // Navigator.pushNamed(context, '/Game');  //beta version for screen navigation
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => Game(difficulty: difficulty),
+                      builder: (context) => Game(solvedBoard: solvedBoard, savedBoard: savedBoard, cloneBoard: savedClone, difficulty: difficulty),
                     ),
                   );
                 },
 
-                    // backgroundColor: Colors.grey,
+                    backgroundColor: Colors.indigo[300]?.withAlpha(200),
+                    elevation: 10,
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.start,
                       children: [
@@ -84,10 +113,37 @@ class _HomeState extends State<Home> {
                 SizedBox(
                   width: 225,
                   height: 50,
-                  child: FloatingActionButton(onPressed: (){
-
+                  child: FloatingActionButton(onPressed: () async{
+                    if(savedData != null){
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => Game(solvedBoard: solvedBoard, savedBoard: savedBoard, cloneBoard: savedClone, difficulty: savedDifficulty!),
+                        ),
+                      );
+                    }else{
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text('No saved game found',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              color: Colors.black,
+                            ),
+                          ),
+                          margin: EdgeInsets.symmetric(horizontal: 100, vertical: 20),
+                          duration: Duration(seconds: 3),
+                          behavior: SnackBarBehavior.floating,
+                          elevation: 5,
+                          backgroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                        ),
+                      );
+                    }
                   },
-                      // backgroundColor: Colors.grey,
+                      backgroundColor: Colors.indigo[300]?.withAlpha(200),
+                      elevation: 10,
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.start,
                         children: [
@@ -124,18 +180,19 @@ class _HomeState extends State<Home> {
                       barrierColor: Colors.black.withAlpha(155),
                       builder: (BuildContext context){
                         return AlertDialog(
-                          title: const Text('Rules',
+                          title: Text('Rules',
                             textAlign: TextAlign.center,
                             style: TextStyle(
-                              fontSize: 20,
+                              // fontSize: 20,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
-                          content: const Text('1. A number must be unique to its row and its column\n\n'
+                          content:  Text('1. A number must be unique to its row and its column\n\n'
                               '2. A number must be unique in the 3x3 sub grids.\n\n'
                               'Enjoy solving!!',
+                            textAlign: TextAlign.center,
                             style: TextStyle(
-                              fontSize: 15,
+                              fontSize: 20,
                               fontWeight: FontWeight.w500,
                             ),
                           ),
@@ -143,7 +200,8 @@ class _HomeState extends State<Home> {
                       }
                   );
                 },
-                    // backgroundColor: Colors.grey,
+                    backgroundColor: Colors.indigo[300]?.withAlpha(200),
+                    elevation: 10,
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.start,
                       children: [
@@ -184,6 +242,9 @@ class _HomeState extends State<Home> {
                             title: const Text(
                                 'Levels',
                               textAlign: TextAlign.center,
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold
+                              ),
                             ),
                             content: Column(
                               mainAxisSize: MainAxisSize.min,
@@ -197,6 +258,7 @@ class _HomeState extends State<Home> {
                                     child: const Text(
                                         'Easy',
                                       style: TextStyle(
+                                        color: Colors.black,
                                         fontSize: 20,
                                       ),
                                     )
@@ -210,6 +272,7 @@ class _HomeState extends State<Home> {
                                     child: const Text(
                                         'Medium',
                                       style: TextStyle(
+                                        color: Colors.black,
                                         fontSize: 20,
                                       ),
                                     )
@@ -223,6 +286,7 @@ class _HomeState extends State<Home> {
                                     child: const Text(
                                         'Hard',
                                       style: TextStyle(
+                                        color: Colors.black,
                                         fontSize: 20,
                                       ),
                                     )
@@ -233,6 +297,8 @@ class _HomeState extends State<Home> {
                       }
                   );
                 },
+                    backgroundColor: Colors.indigo[300]?.withAlpha(200),
+                    elevation: 10,
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.start,
                       children: [
@@ -270,8 +336,16 @@ class _HomeState extends State<Home> {
                       barrierColor: Colors.black.withAlpha(155),
                       builder: (BuildContext context){
                         return AlertDialog(
-                          title: const Text('Exit'),
-                          content: const Text('Are you sure you want to exit?'),
+                          title: const Text('Exit',
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold
+                            ),
+                          ),
+                          content: const Text('Are you sure you want to exit?',
+                            style: TextStyle(
+                              fontSize: 20
+                            ),
+                          ),
                           actions: [
                             TextButton(
                               onPressed: () {
@@ -294,6 +368,8 @@ class _HomeState extends State<Home> {
                       }
                   );
                 },
+                    backgroundColor: Colors.indigo[300]?.withAlpha(200),
+                    elevation: 10,
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.start,
                       children: [
