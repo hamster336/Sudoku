@@ -15,9 +15,9 @@ class _HomeState extends State<Home>{
   String difficulty = 'Easy';
   List<List<int?>>? savedBoard = null;
   List<List<int?>>? savedClone = null;
-  List<List<int>>? solvedBoard = null;
+  List<List<int?>>? solvedBoard = null;
   String? savedDifficulty = null;
-  late final savedData;
+  late var savedData;
 
   @override
   void initState(){
@@ -27,7 +27,7 @@ class _HomeState extends State<Home>{
 
 void _savedPuzzle() async{
   savedData = await SaveBoard.loadPuzzle();
-  if (savedData != null) {
+  if (SaveBoard.hasSavedPuzzle == true) {
     savedBoard = savedData['board'];
     savedClone = savedData['clone'];
     solvedBoard = savedData['solution'];
@@ -114,7 +114,7 @@ void _savedPuzzle() async{
                   width: 225,
                   height: 50,
                   child: FloatingActionButton(onPressed: () async{
-                    if(savedData != null){
+                    if(SaveBoard.hasSavedPuzzle == true){
                       Navigator.push(
                         context,
                         MaterialPageRoute(

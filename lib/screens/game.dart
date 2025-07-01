@@ -6,7 +6,7 @@ class Game extends StatefulWidget {
   final String difficulty;
   final List<List<int?>>? savedBoard;
   final List<List<int?>>? cloneBoard;
-  final List<List<int>>? solvedBoard;
+  final List<List<int?>>? solvedBoard;
 
   const Game({super.key, required this.savedBoard, required this.cloneBoard, required this.solvedBoard, required this.difficulty});
 
@@ -21,17 +21,31 @@ class _GameState extends State<Game> {
   late List<List<int?>> solvedPuzzle;
   late List<List<int?>> puzzle;
   late List<List<int?>> clone;
-  int selectedRow = 0;
-  int selectedCol = 0;
+  int? selectedRow = null;
+  int? selectedCol = null;
+
+  // @override
+  // void initState(){
+  //   super.initState();
+  //   if(SaveBoard.hasSavedPuzzle == true){
+  //       solvedPuzzle = widget.solvedBoard as List<List<int>>;
+  //       puzzle = (widget.savedBoard) as List<List<int?>>;
+  //       clone = (widget.cloneBoard) as List<List<int?>>;
+  //   }else{
+  //     solvedPuzzle = game.solution;
+  //     puzzle = game.removeCells(widget.difficulty);
+  //     clone = cloneBoard(puzzle);
+  //   }
+  // }
 
   @override
-  void initState(){
+  void initState() {
     super.initState();
-    if(widget.savedBoard != null && widget.cloneBoard != null){
-        solvedPuzzle = widget.solvedBoard as List<List<int>>;
-        puzzle = (widget.savedBoard) as List<List<int?>>;
-        clone = (widget.cloneBoard) as List<List<int?>>;
-    }else{
+    if (SaveBoard.hasSavedPuzzle == true && widget.savedBoard != null && widget.cloneBoard != null && widget.solvedBoard != null) {
+      solvedPuzzle = List<List<int?>>.from(widget.solvedBoard!);
+      puzzle = List<List<int?>>.from(widget.savedBoard!);
+      clone = List<List<int?>>.from(widget.cloneBoard!);
+    } else {
       solvedPuzzle = game.solution;
       puzzle = game.removeCells(widget.difficulty);
       clone = cloneBoard(puzzle);
@@ -61,7 +75,7 @@ class _GameState extends State<Game> {
             centerTitle: true,
             actions: [
               PopupMenuButton<String>(
-                offset: Offset(100, 50),
+                offset: Offset(100, 55),
                 itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
                   PopupMenuItem<String>(
                     value: "Save Board",
@@ -74,8 +88,8 @@ class _GameState extends State<Game> {
                 icon: Icon(Icons.menu),
                 onSelected: (String value){
                   if(value == "Save Board"){
-                    SaveBoard(puzzle, clone, widget.difficulty);
-                    isSaved = true;
+                    SaveBoard(puzzle, clone, solvedPuzzle, widget.difficulty);
+                    SaveBoard.hasSavedPuzzle = true;
 
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
@@ -96,7 +110,26 @@ class _GameState extends State<Game> {
                       ),
                     );
                   }else if(value == "Clear Board"){
-                    // SaveBoard.ClearBoard();
+                    SaveBoard.ClearBoard();
+
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('Board Cleared',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            color: Colors.black,
+                          ),
+                        ),
+                        margin: EdgeInsets.symmetric(horizontal: 100, vertical: 20),
+                        duration: Duration(seconds: 3),
+                        behavior: SnackBarBehavior.floating,
+                        elevation: 5,
+                        backgroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                      ),
+                    );
                   }
                 },
               )
@@ -220,37 +253,11 @@ class _GameState extends State<Game> {
       
                       Spacer(),
                       
-                      SizedBox(
-                        width: 150,
-                        child: FloatingActionButton(onPressed: (){
-                          SaveBoard(puzzle, clone, widget.difficulty);
-                          isSaved = true;
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text('Board Saved',
-                                textAlign: TextAlign.center,
-                                style: TextStyle(
-                                  color: Colors.black,
-                                ),
-                              ),
-                              margin: EdgeInsets.symmetric(horizontal: 100, vertical: 20),
-                              duration: Duration(seconds: 3),
-                              behavior: SnackBarBehavior.floating,
-                              elevation: 5,
-                              backgroundColor: Colors.white,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(20),
-                              ),
-                            ),
-                          );
-                        },
-                          backgroundColor: Colors.indigo[300]?.withAlpha(200),
-                          child: const Text('Save Board',
-                            style: TextStyle(
-                              color: Colors.black,
-                              fontSize: 18
-                            ),
-                          ),
+                      Text('Enjoy Solving!!',
+                        style: TextStyle(
+                          color: Colors.black,
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
                         ),
                       ),
                       Spacer(),
@@ -341,7 +348,7 @@ class _GameState extends State<Game> {
                   children: [
                     FloatingActionButton(onPressed: (){
                       setState(() {
-                        puzzle[selectedRow][selectedCol] = 1;
+                        puzzle[selectedRow!][selectedCol!] = 1;
                       });
                     },
                       backgroundColor: Colors.indigo[300]?.withAlpha(200),
@@ -356,7 +363,7 @@ class _GameState extends State<Game> {
       
                     FloatingActionButton(onPressed: (){
                       setState(() {
-                        puzzle[selectedRow][selectedCol] = 2;
+                        puzzle[selectedRow!][selectedCol!] = 2;
                       });
                     },
                       backgroundColor: Colors.indigo[300]?.withAlpha(200),
@@ -371,7 +378,7 @@ class _GameState extends State<Game> {
       
                     FloatingActionButton(onPressed: (){
                       setState(() {
-                        puzzle[selectedRow][selectedCol] = 3;
+                        puzzle[selectedRow!][selectedCol!] = 3;
                       });
                     },
                       backgroundColor: Colors.indigo[300]?.withAlpha(200),
@@ -386,7 +393,7 @@ class _GameState extends State<Game> {
       
                     FloatingActionButton(onPressed: (){
                       setState(() {
-                        puzzle[selectedRow][selectedCol] = 4;
+                        puzzle[selectedRow!][selectedCol!] = 4;
                       });
                     },
                       backgroundColor: Colors.indigo[300]?.withAlpha(200),
@@ -401,7 +408,7 @@ class _GameState extends State<Game> {
       
                     FloatingActionButton(onPressed: (){
                       setState(() {
-                        puzzle[selectedRow][selectedCol] = 5;
+                        puzzle[selectedRow!][selectedCol!] = 5;
                       });
                     },
                       backgroundColor: Colors.indigo[300]?.withAlpha(200),
@@ -421,7 +428,7 @@ class _GameState extends State<Game> {
                   children: [
                     FloatingActionButton(onPressed: (){
                       setState(() {
-                        puzzle[selectedRow][selectedCol] = 6;
+                        puzzle[selectedRow!][selectedCol!] = 6;
                       });
                     },
                       backgroundColor: Colors.indigo[300]?.withAlpha(200),
@@ -436,7 +443,7 @@ class _GameState extends State<Game> {
       
                     FloatingActionButton(onPressed: (){
                       setState(() {
-                        puzzle[selectedRow][selectedCol] = 7;
+                        puzzle[selectedRow!][selectedCol!] = 7;
                       });
                     },
                       backgroundColor: Colors.indigo[300]?.withAlpha(200),
@@ -451,7 +458,7 @@ class _GameState extends State<Game> {
       
                     FloatingActionButton(onPressed: (){
                       setState(() {
-                        puzzle[selectedRow][selectedCol] = 8;
+                        puzzle[selectedRow!][selectedCol!] = 8;
                       });
                     },
                       backgroundColor: Colors.indigo[300]?.withAlpha(200),
@@ -466,7 +473,7 @@ class _GameState extends State<Game> {
       
                     FloatingActionButton(onPressed: (){
                       setState(() {
-                        puzzle[selectedRow][selectedCol] = 9;
+                        puzzle[selectedRow!][selectedCol!] = 9;
                       });
                     },
                       backgroundColor: Colors.indigo[300]?.withAlpha(200),
@@ -481,7 +488,7 @@ class _GameState extends State<Game> {
       
                     FloatingActionButton(onPressed: (){
                       setState(() {
-                        puzzle[selectedRow][selectedCol] = null;
+                        puzzle[selectedRow!][selectedCol!] = null;
                       });
                     },
                         backgroundColor: Colors.indigo[300]?.withAlpha(200),

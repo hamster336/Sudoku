@@ -2,37 +2,37 @@ import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class SaveBoard{
-  late List<List<int>>? solution;
+  late List<List<int?>>? solution;
   late List<List<int?>>? puzzle;
   late List<List<int?>>? clone;
   late String? difficulty;
   static bool hasSavedPuzzle = false;
 
-  SaveBoard(this.puzzle, this.clone, this.difficulty) {
+  SaveBoard(this.puzzle, this.clone, this.solution, this.difficulty) {
     savePuzzle();
   }
 
   Future<void> savePuzzle() async {
-    final prefs = await SharedPreferences.getInstance();
-    final data = {
+    var prefs = await SharedPreferences.getInstance();
+    var data = {
       'board': puzzle,
       'clone': clone,
       'solution': solution,
       'difficulty': difficulty,
     };
-    final boardJson = jsonEncode(data);
+    var boardJson = jsonEncode(data);
     await prefs.setString('saved_puzzle', boardJson);
-    await prefs.setBool('has_saved_puzzle', true);
+    // await prefs.setBool('has_saved_puzzle', true);
     hasSavedPuzzle = true;
   }
 
   static Future<Map<String, dynamic>?> loadPuzzle() async {
-    final prefs = await SharedPreferences.getInstance();
-    final boardJson = prefs.getString('saved_puzzle');
+    var prefs = await SharedPreferences.getInstance();
+    var boardJson = prefs.getString('saved_puzzle');
 
     if (boardJson == null) return null;
 
-    final data = jsonDecode(boardJson);
+    var data = jsonDecode(boardJson);
 
     List<List<int?>> board = (data['board'] as List)
         .map<List<int?>>((row) => List<int?>.from(row))
@@ -58,12 +58,8 @@ class SaveBoard{
     };
   }
 
-   void ClearBoard(){
+   static void ClearBoard(){
     hasSavedPuzzle = false;
-    puzzle = null;
-    clone = null;
-    solution = null;
-    difficulty = null;
   }
 
   static Future<Map<String, dynamic>?> get loadedPuzzle => loadPuzzle();
